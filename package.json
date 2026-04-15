@@ -1,5 +1,6 @@
 {
-  "name": "syllabye-firebase",
+  "name": "firebase-tutorial",
+
   "version": "0.1.0",
   "private": true,
   "dependencies": {

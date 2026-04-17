@@ -1,9 +1,10 @@
-import './App.css';
+import './css/App.css';
 import { useState } from 'react';
-import { db } from './firebase';
+import { auth, provider, db, signInWithPopup } from './firebase/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 function App() {
+    const [user, setUser] = useState(null);
     const [term, setTerm] = useState('');
     const [department, setDepartment] = useState('');
     const [courseNumber, setCourseNumber] = useState('');
@@ -12,7 +13,22 @@ function App() {
     const [file, setFile] = useState(null);
     const [status, setStatus] = useState('');
 
+    async function handleSignIn() {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            setUser(result.user);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function handleSignOut() {
+        auth.signOut();
+        setUser(null);
+    }
+
     async function handleSubmit() {
+        console.log('current user:', auth.currentUser);
         if (!term || !department || !courseNumber || !courseName || !instructor || !file) {
             alert('Please fill in all fields and attach a PDF.');
             return;
@@ -41,9 +57,21 @@ function App() {
         }
     }
 
+    if (!user) {
+        return (
+            <div className="App">
+                <h1 className="form-title">Welcome!</h1>
+                <p className="form-sub">Please sign in to upload a syllabus.</p>
+                <button className="submit-btn" onClick={handleSignIn}>
+                    Sign in with Google
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="App">
-            <h1 className="form-title">Welcome!</h1>
+            <h1 className="form-title">Welcome, {user.displayName}!</h1>
             <p className="form-sub">Fill in the course details and attach the syllabus PDF.</p>
 
             <div className="field-row">
@@ -123,6 +151,7 @@ function App() {
             )}
 
             <button className="submit-btn" onClick={handleSubmit}>Submit syllabus</button>
+            <button style={{ marginTop: '0.5rem' }} onClick={handleSignOut}>Sign out</button>
         </div>
     );
 }
